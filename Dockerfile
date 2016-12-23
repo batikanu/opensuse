@@ -1,5 +1,11 @@
 FROM opensuse
 
+# Proxies for local and jenkins build respectively
+#ENV http_proxy=http://ABGPROXYA.ABG.FSC.NET:82
+#ENV https_proxy=http://ABGPROXYA.ABG.FSC.NET:82
+#ENV http_proxy=http://proxy.intern.est.fujitsu.com:8080
+#ENV https_proxy=http://proxy.intern.est.fujitsu.com:8080
+
 # glassfish installation
 RUN zypper -n in \
   java-1_7_0-openjdk \
@@ -44,7 +50,7 @@ RUN pg_ctl start && \
     sleep 2 && \
     psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
-COPY pg_hba.conf postgresql.conf PGDATA/
+COPY pg_hba.conf postgresql.conf /var/lib/pgsql/database/
 #-----END-----#
 
 USER root
@@ -90,8 +96,7 @@ ADD glassfish_mid.properties /opt/oscm-install-pack/domains/indexer_domain/glass
 RUN mkdir /opt/indexdir && \
 	chmod a+w /opt/indexdir && \
 	sudo -u postgres pg_ctl start -D $PGDATA && sleep 3 &&\
-	/opt/apache-ant-1.9.6/bin/ant -f /opt/oscm-install-pack/install/build-glassfish.xml SETUP
-	#sudo -u postgres pg_ctl stop -D $PGDATA
+	/opt/apache-ant-1.9.6/bin/ant -f /opt/oscm-install-pack/install/build-glassfish.xml SETUP	
 
 ADD gfpass /opt/
 ADD oscm-integrationtests-mockproduct.war /opt/
@@ -109,7 +114,7 @@ RUN  chmod a+x /opt/james-2.3.2.1/bin/*.sh
 EXPOSE 8048 8080 8081 8448
 
 # Add VOLUMEs to allow backup of config, logs and databases
-VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
+VOLUME  ["/var/lib/pgsql/database"]
 
 # Remove proxies at the end
 #ENV http_proxy=""
