@@ -37,8 +37,9 @@ USER postgres
 
 ENV PGDATA=/var/lib/pgsql/database
 
-RUN mkdir $PGDATA && \
-    initdb
+RUN mkdir $PGDATA
+
+RUN initdb
 
 RUN pg_ctl start && \
     sleep 2 && \
@@ -70,7 +71,7 @@ RUN unzip /opt/james-2.3.2.1.zip -d /opt/ && \
     chmod a+x /opt/james-2.3.2.1/bin/*.sh
 #-----END-----#
 
-# configure db
+# deployment
 COPY configsettings.properties /opt/oscm-install-pack/databases/bes_db/
 COPY playground.sql /opt/
 COPY glassfish_bes.properties /opt/oscm-install-pack/domains/bes_domain/glassfish.properties
@@ -94,6 +95,7 @@ RUN /opt/glassfish3/glassfish/bin/asadmin start-domain bes-domain && /opt/glassf
     /opt/glassfish3/glassfish/bin/asadmin deploy /opt/oscm-integrationtests-mockproduct.war --port 8048 --user admin --passwordfile /opt/gfpass && \
     /opt/glassfish3/glassfish/bin/asadmin deploy /opt/birt.war --port 8048 --user admin --passwordfile /opt/gfpass &&\
     /opt/glassfish3/glassfish/bin/asadmin start-domain master-indexer-domain && /opt/glassfish3/glassfish/bin/asadmin --port 8448 --user admin --passwordfile /opt/gfpass enable-secure-admin
+#-----END-----#
 
 COPY startAll.sh /opt/
 RUN  chmod a+x /opt/startAll.sh
@@ -102,7 +104,9 @@ RUN  chmod a+x /opt/startAll.sh
 EXPOSE 8048 8080 8081 8448
 
 # Add VOLUMEs to allow backup of config, logs and databases
-VOLUME  ["/var/lib/pgsql/database"]
+VOLUME  ["/var/lib/pgsql/data"]
+
+VOLUME  ["/opt/glassfish3"]
 
 # Remove proxies at the end
 #ENV http_proxy=""
