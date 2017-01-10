@@ -36,15 +36,6 @@ function cleanDomain() {
   rm -f glassfish-container/domains/$1/logs/*.log
 }
 
-function setPostgresHostname() {
-  setPostgresHostnameByDomain bes-domain
-  setPostgresHostnameByDomain master-indexer-domain
-}
-
-function setPostgresHostnameByDomain() {
-  ./change-hostname.sh $POSTGRES_HOSTNAME glassfish-container/domains/$1/config/domain.xml
-}
-
 function build {
   build-allinone
   build-glassfish
